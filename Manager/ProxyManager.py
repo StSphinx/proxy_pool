@@ -14,8 +14,8 @@
 __author__ = 'JHao'
 
 from DB.DbClient import DbClient
-from Util.GetConfig import GetConfig
 from ProxyGetter.getFreeProxy import GetFreeProxy
+from Util.GetConfig import GetConfig
 
 
 class ProxyManager(object):
@@ -77,6 +77,17 @@ class ProxyManager(object):
         self.db.changeTable(self.useful_proxy_queue)
         quan_useful_queue = self.db.get_status()
         return {'raw_proxy': quan_raw_proxy, 'useful_proxy_queue': quan_useful_queue}
+
+    @staticmethod
+    def validate():
+        import sys
+        import multiprocessing
+        sys.path.append('../')
+        from Schedule.ProxyRefreshSchedule import main_check
+        p = multiprocessing.Process(target=main_check, args=(10,))
+        p.start()
+        print 'useful_proxy_validating'
+
 
 if __name__ == '__main__':
     pp = ProxyManager()

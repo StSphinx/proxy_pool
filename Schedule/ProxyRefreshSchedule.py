@@ -16,6 +16,7 @@ import os
 import random
 import sys
 import time
+from logging import handlers
 from multiprocessing import Process
 
 import requests
@@ -42,7 +43,7 @@ class ProxyRefreshSchedule(ProxyManager):
         logger_raw = logging.getLogger('apscheduler.raw_check-{}'.format(os.getpid()))
 
         fmt = logging.Formatter('%(asctime)s - %(levelname)s : %(name)s : %(message)s')
-        fh = logging.FileHandler(filename='../log/raw_proxy_log.txt')
+        fh = handlers.RotatingFileHandler('../log/raw_proxy_log.txt', maxBytes=100 * 1024 * 1024, backupCount=5)
         fh.setFormatter(fmt=fmt)
         logger_raw.addHandler(fh)
 
@@ -73,7 +74,7 @@ class ProxyRefreshSchedule(ProxyManager):
         logger_avail = logging.getLogger('apscheduler.avail_check-{}'.format(os.getpid()))
 
         fmt = logging.Formatter('%(asctime)s - %(levelname)s : %(name)s : %(message)s')
-        fh = logging.FileHandler(filename='../log/available_proxy_log.txt')
+        fh = handlers.RotatingFileHandler('../log/available_proxy_log.txt', maxBytes=100 * 1024 * 1024, backupCount=5)
         fh.setFormatter(fmt=fmt)
         logger_avail.addHandler(fh)
 
@@ -146,7 +147,7 @@ def main_check(process_num=10):
         pl[num].start()
 
     for num in range(process_num):
-        pl[num].join()
+        pl[num].join(1800)
 
     log.debug('Process main_check completed.')
 

@@ -129,7 +129,7 @@ class GetFreeProxy(object):
         抓取guobanjia http://www.goubanjia.com/free/gngn/index.shtml
         :return:
         """
-        url = "http://www.goubanjia.com/free/gngn/index.shtml"
+        url_base = "http://www.goubanjia.com/free/gngn/index{}.shtml"
         header = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Encoding': 'gzip, deflate, sdch',
@@ -141,17 +141,23 @@ class GetFreeProxy(object):
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
+        for tail in ['', '1', '2', '3', '4']:
+            url = url_base.format(tail)
+            print url
+            tree = getHtmlTree(url, header=header)
+            # 现在每天最多放15个（一页）
+            for i in xrange(15):
+                try:
+                    d = tree.xpath('//*[@id="list"]/table/tbody/tr[{}]/td'.format(i + 1))[0]
+                    # print d
 
-        tree = getHtmlTree(url, header=header)
-        # 现在每天最多放15个（一页）
-        for i in xrange(15):
-            d = tree.xpath('//*[@id="list"]/table/tbody/tr[{}]/td'.format(i + 1))[0]
-            # print d
+                    o = d.xpath('.//span/text() | .//div/text()')
+                    # print o
+                except:
+                    pass
 
-            o = d.xpath('.//span/text() | .//div/text()')
-            # print o
-
-            yield ''.join(o[:-1]) + ':' + o[-1]
+                yield ''.join(o[:-1]) + ':' + o[-1]
+            # print 'finish fetching index{}'.format(tail)
         print 'finish guobanjia fetching proxy ip'
 
 

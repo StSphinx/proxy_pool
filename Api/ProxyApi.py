@@ -48,6 +48,12 @@ def refresh():
     return 'success'
 
 
+@app.route('/validate/')
+def validate():
+    ProxyManager().validate()
+    return 'success'
+
+
 @app.route('/get_all/')
 def getAll():
     proxys = ProxyManager().getAll()
