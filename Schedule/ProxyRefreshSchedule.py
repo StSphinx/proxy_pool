@@ -181,6 +181,6 @@ if __name__ == '__main__':
 
     # main()
     sched = BlockingScheduler()
-    sched.add_job(main, 'interval', minutes=10)
-    sched.add_job(main_check, 'interval', minutes=15)
+    sched.add_job(main, 'interval', minutes=1)
+    sched.add_job(main_check, 'interval', minutes=3)
     sched.start()

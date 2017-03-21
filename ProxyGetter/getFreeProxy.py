@@ -17,9 +17,9 @@ import sys
 import requests
 
 reload(sys)
-sys.setdefaultencoding('utf-8')
+# sys.setdefaultencoding('utf-8')
 
-from Util.utilFunction import robustCrawl, getHtmlTree
+from Util.utilFunction import robustCrawl, getHtmlTree, getHtmlSoup
 
 # for debug to disable insecureWarning
 requests.packages.urllib3.disable_warnings()
@@ -55,10 +55,19 @@ class GetFreeProxy(object):
         }
 
         for url in url_list:
-            tree = getHtmlTree(url, header=header)
-            proxy_list = tree.xpath('.//div[@id="index_free_list"]//tbody/tr')
-            for proxy in proxy_list:
-                yield ':'.join(proxy.xpath('./td/text()')[0:2])
+            # tree = getHtmlTree(url, header=header)
+            # proxy_list = tree.xpath('/html/body/*')
+            html = requests.get(url=url, headers=header).content
+            print html
+            soap = getHtmlSoup(url=url, header=header)
+            print soap
+            index_free_list = soap.table
+            print index_free_list
+            # print proxy_list
+            #
+            # '//[@id="index_free_list"]/table/tbody/tr[1]/td[1]/text()'
+            # for proxy in proxy_list:
+            #     yield ':'.join(proxy.xpath('./td/text()')[0:2])
         print 'finish kuaidaili fetching proxy ip'
 
     @staticmethod
@@ -79,6 +88,7 @@ class GetFreeProxy(object):
     @staticmethod
     @robustCrawl
     def freeProxyThird(days=1):
+
         """
         抓取有代理 http://www.youdaili.net/Daili/http/
         :param days:
@@ -116,10 +126,39 @@ class GetFreeProxy(object):
         抓取西刺代理 http://api.xicidaili.com/free2016.txt
         :return:
         """
-        url = "http://api.xicidaili.com/free2016.txt"
-        html = requests.get(url).content
-        for proxy in re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}', html):
-            yield proxy
+
+        # url = "http://api.xicidaili.com/free2016.txt"
+        url = 'http://www.xicidaili.com/nn/'
+        header = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, sdch',
+            'Accept-Language': 'zh-CN,zh;q=0.8',
+            'Connection': 'keep-alive',
+            # 'Cookie:_free_proxy_session=BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiJTI3OWQ2MmZlNzRhNjBkODVhODM5NWNkYzJkYWM1Mzc1BjsAVEkiEF9jc3JmX3Rva2VuBjsARkkiMU42bFZ2NWRPUUlGNzNOUHBZTTNSMjhnVlJkL3MrYlBZYjhuL0sweVUxOWc9BjsARg%3D%3D--63d26ac91ca49227f33f19d0dab16f1a45f5dd5c; CNZZDATA1256960793=1622617834-1488331834-%7C1488331834
+            'Host': 'www.xicidaili.com',
+            'If-None-Match': 'W/"99fc3b208ce322f5e6b799290965ac14"',
+            'Referer': 'http://www.xicidaili.com/wt/',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        }
+
+        tree = getHtmlTree(url=url, header=header)
+
+        for i in range(10):
+            ip_list = tree.xpath('//*[@id="ip_list"]/tbody/tr[2]/td[2]/text()')
+            print ip_list
+            # for tr in
+            # ip = ip_list
+
+            for row in ip_list:
+                print row
+                # ip = ip
+                # print ip
+                yield row
+        # resp = requests.get(url=url, headers=header)
+        # html = resp.content
+        # for proxy in re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}', html):
+        #     yield proxy
         print 'finish xici fetching proxy ip'
 
     @staticmethod
@@ -129,7 +168,9 @@ class GetFreeProxy(object):
         抓取guobanjia http://www.goubanjia.com/free/gngn/index.shtml
         :return:
         """
+
         url_base = "http://www.goubanjia.com/free/gngn/index{}.shtml"
+
         header = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Encoding': 'gzip, deflate, sdch',
@@ -141,10 +182,12 @@ class GetFreeProxy(object):
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
-        for tail in ['', '1', '2', '3', '4']:
+
+        for tail in ['', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
             url = url_base.format(tail)
-            print url
+            # print url
             tree = getHtmlTree(url, header=header)
+
             # 现在每天最多放15个（一页）
             for i in xrange(15):
                 try:
@@ -157,23 +200,35 @@ class GetFreeProxy(object):
                     pass
 
                 yield ''.join(o[:-1]) + ':' + o[-1]
-            # print 'finish fetching index{}'.format(tail)
+                # print 'finish fetching index{}'.format(tail)
         print 'finish guobanjia fetching proxy ip'
+
+    @staticmethod
+    @robustCrawl
+    def getKuaidaili():
+        url = 'http://dev.kuaidaili.com/api/getproxy/?orderid=988835387348925&num=500&b_pcchrome=1&b_pcie=1&b_pcff=1&protocol=1&method=1&an_an=1&an_ha=1&sep=1'
+        resp = requests.get(url)
+        proxy_list = resp.content.split('\r\n')
+        for proxy in proxy_list:
+            yield proxy
 
 
 if __name__ == '__main__':
     gg = GetFreeProxy()
     # for e in gg.freeProxyFirst():
     #     print e
-    #
+    # #
     # for e in gg.freeProxySecond():
     #     print e
-    #
+    # #
     # for e in gg.freeProxyThird():
     #     print e
-
+    #
     # for e in gg.freeProxyFourth():
     #     print e
     #
-    for e in gg.freeProxyFifth():
-        print e
+    # for e in gg.freeProxyFifth():
+    #     print e
+
+    # for i in gg.getKuaidaili():
+    #     print i

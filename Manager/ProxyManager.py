@@ -43,6 +43,7 @@ class ProxyManager(object):
             # store raw proxy
             self.db.changeTable(self.raw_proxy_queue)
             for proxy in proxy_set:
+                print proxy
                 self.db.put(proxy)
 
     def get(self):
@@ -91,5 +92,5 @@ class ProxyManager(object):
 
 if __name__ == '__main__':
     pp = ProxyManager()
-    # pp.refresh()
-    print pp.get_status()
+    pp.refresh()
+    # print pp.get_status()

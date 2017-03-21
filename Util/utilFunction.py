@@ -11,7 +11,9 @@
                    2016/11/25: 添加robustCrawl、verifyProxy、getHtmlTree
 -------------------------------------------------
 """
-
+import requests
+from bs4 import BeautifulSoup
+from lxml import etree
 
 # noinspection PyPep8Naming
 def robustCrawl(func):
@@ -43,7 +45,12 @@ def getHtmlTree(url, header=None, **kwargs):
     :param kwargs:
     :return:
     """
-    import requests
-    from lxml import etree
+
     html = requests.get(url=url, headers=header).content
     return etree.HTML(html)
+
+
+def getHtmlSoup(url, header=None, **kwargs):
+    html =requests.get(url=url, headers=header).content
+    return BeautifulSoup(html, "lxml")
+
